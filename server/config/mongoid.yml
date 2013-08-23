@@ -1,0 +1,20 @@
+development:
+  sessions:
+    default:
+      database: world_db_dev
+      hosts:
+        - localhost:27017
+
+production:
+  sessions:
+    default:
+      database: world_db_prod
+      hosts:
+        - localhost:27017
+
+test:
+  sessions:
+    default:
+      database: world_db_test
+      hosts:
+        - localhost:27017
