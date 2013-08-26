@@ -7,16 +7,28 @@ module Deathmatch
       @server = Server.new :test
     end
 
-    it 'initializes database connection' do
-      @server.database_loaded.should be_true
+    after(:all) do
+      @server.send_command({ name: :shutdown })
     end
 
-    it 'checks if logic core was successfully loaded' do
-      @server.core_loaded.should be_true
+    context 'Creates simple test server.' do
+      it 'initializes database connection' do
+        @server.database_loaded.should be_true
+      end
+
+      it 'loads logic core successfully' do
+        @server.core_loaded.should be_true
+      end
+
+      it 'ititializes network connection' do
+        @server.network_initialized.should be_true
+      end
     end
 
-    it 'ititializes network connection' do
-      @server.network_initialized.should be_true
+    context 'Runs simple test server' do
+      it 'is in main loop after run' do
+        Thread.new { @server.run }
+      end
     end
   end
 end

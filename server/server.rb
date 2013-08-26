@@ -1,16 +1,21 @@
 require 'mongoid'
 
 require_relative '../common/logger/logger'
+require_relative '../common/command_processor/command_processor'
 
 module Deathmatch
   class Server
+    require 'thread'
+
     include Deathmatch::Common::Logger
+    include Deathmatch::Common::CommandProcessor
 
     attr_accessor :database_loaded
     attr_accessor :core_loaded
     attr_accessor :network_initialized
 
     ROOT = File.join(Dir.pwd, 'server')
+    PROCESS_COMMAND_TAKT = 1000
 
     def initialize mode
       log ({ type: :notice,
@@ -34,8 +39,28 @@ module Deathmatch
     end
 
     def run
-      while true
-      end
+      log ({ type: :notice,
+             text: "Starting main loop..."})
+
+      @mutex = Mutex.new
+      @main_loop_thread = Thread.new {
+        while true
+          @mutex.synchronize { execute_commands }
+          Threed.sleep PROCESS_COMMAND_TAKT
+        end
+      }
+      @command_processor_thread = Thread.new {
+        while true
+          @mutex.synchronize { accept_commands }
+          Thread.sleep 10
+        end
+      }
+    end
+
+    def send_command argument
+      log({ type: :debug,
+            text: "Accepted command: #{argument}"})
+      command_queue.unshift Command.new(argument)
     end
 
     private
@@ -45,13 +70,13 @@ module Deathmatch
     end
 
     def init_database mode
-      Mongoid.load! "#{ Deathmatch::Server::ROOT }/config/mongoid.yml", mode
+      Mongoid.load! "#{ ROOT }/config/mongoid.yml", mode
       require_relative 'data_model/user'
       DataModel::User.new.save
     end
 
     def init_network
-      false
+      true
     end
   end
 end
