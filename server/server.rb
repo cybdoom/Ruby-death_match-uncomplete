@@ -10,9 +10,10 @@ module Deathmatch
     include Deathmatch::Common::Logger
     include Deathmatch::Common::CommandProcessor
 
-    attr_accessor :database_loaded
-    attr_accessor :core_loaded
-    attr_accessor :network_initialized
+    attr_reader :database_loaded
+    attr_reader :core_loaded
+    attr_reader :network_initialized
+    attr_reader :status
 
     ROOT = File.join(Dir.pwd, 'server')
     PROCESS_COMMAND_TAKT = 0.01
@@ -20,11 +21,16 @@ module Deathmatch
 
     def initialize mode
       action_result = init_database mode
-      self.database_loaded = action_result
+      @database_loaded = action_result
+      @status = action_result ? :ok : :error
+
       action_result = load_core
-      self.core_loaded = action_result
+      @core_loaded = action_result
+      @status = :error unless action_result
+
       action_result = init_network
-      self.network_initialized = action_result
+      @network_initialized = action_result
+      @status = :error unless action_result
 
       @accepted_commands = []
       @command_queue = []
@@ -32,34 +38,30 @@ module Deathmatch
 
     def run
       @mutex = Mutex.new
-      @main_loop_thread = Thread.new {
-        while true
-          @mutex.synchronize { execute_commands }
-          sleep PROCESS_COMMAND_TAKT
-        end
-      }
       @command_processor_thread = Thread.new {
         while true
           @mutex.synchronize { accept_commands }
           sleep ACCEPT_COMMAND_TAKT
         end
       }
-    end
-
-    def send_command command
-      @accepted_commands << command
+      @main_loop_thread = Thread.new {
+        while true
+          @mutex.synchronize { execute_commands }
+          sleep PROCESS_COMMAND_TAKT
+        end
+      }.join
     end
 
     private
 
     def execute_commands
+      @command_queue << Command.new({ name: :do_nothing })
       while @command_queue.any?
-        execute_command @command_queue.pop
+        execute_next
       end
     end
 
     def accept_commands
-      puts 'In accept_command method'
       @command_queue = @accepted_commands
       @accepted_commands.clear
     end

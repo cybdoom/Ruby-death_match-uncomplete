@@ -7,12 +7,8 @@ module Deathmatch::Common::CommandProcessor
     :shutdown
   ]
 
-  def command_queue
-    @command_queue || []
-  end
-
   def execute_next
-    execute(command_queue.pop || Command.new({ name: :do_nothing }))
+    execute(@command_queue.pop)
   end
 
   private
@@ -30,7 +26,5 @@ module Deathmatch::Common::CommandProcessor
   end
 
   def shutdown
-    log({ type: :warning,
-          text: 'Shutdown command detected. Closing all...'})
   end
 end

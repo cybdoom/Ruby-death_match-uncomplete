@@ -23,11 +23,11 @@ module Deathmatch
 
     context 'Runs simple test server' do
       before(:all) do
-        @server.run
+        Thread.new { @server.run }
       end
 
-      it 'sends simple shutdown command' do
-        @server.send_command({ name: :shutdown })
+      it 'has status :ok after run started' do
+        @server.status.should == :ok
       end
     end
   end
