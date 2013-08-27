@@ -19,11 +19,8 @@ module Deathmatch::Common::CommandProcessor
 
   def execute command
     unless KNOWN_COMMANDS.include? command.name
-      log ({ type: :error,
-             text: "Unknown command #{command}" })
+      return false
     else
-      log ({ type: :notice,
-             text: "Start executing the command: #{command}"})
     end
 
     self.send command.name

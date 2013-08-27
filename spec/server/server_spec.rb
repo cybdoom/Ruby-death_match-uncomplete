@@ -7,10 +7,6 @@ module Deathmatch
       @server = Server.new :test
     end
 
-    after(:all) do
-      @server.send_command({ name: :shutdown })
-    end
-
     context 'Creates simple test server.' do
       it 'initializes database connection' do
         @server.database_loaded.should be_true
@@ -26,8 +22,12 @@ module Deathmatch
     end
 
     context 'Runs simple test server' do
-      it 'is in main loop after run' do
-        Thread.new { @server.run }
+      before(:all) do
+        @server.run
+      end
+
+      it 'sends simple shutdown command' do
+        @server.send_command({ name: :shutdown })
       end
     end
   end
