@@ -5,6 +5,7 @@ require_relative '../common/command_processor/command_processor'
 require_relative '../common/network_connection/server_adapter'
 require_relative 'data_model/user'
 
+
 module Deathmatch
   class Server
     require 'thread'
@@ -37,6 +38,7 @@ module Deathmatch
 
       @accepted_commands = []
       @command_queue = []
+      @works = true
     end
 
     def run
