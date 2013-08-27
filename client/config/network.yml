@@ -1,0 +1,10 @@
+---
+:test:
+  :host: localhost
+  :port: 1234
+:dev:
+  :host: localhost
+  :port: 1234
+:prod:
+  :host: localhost
+  :port: 1234

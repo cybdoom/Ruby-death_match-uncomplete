@@ -1,11 +1,9 @@
 require 'mongoid'
 
-module Deathmatch
-  module DataModel
-    class User
-      include Mongoid::Document
+module Deathmatch::DataModel
+  class User
+    include Mongoid::Document
 
-      field :name
-    end
+    field :name
   end
 end
