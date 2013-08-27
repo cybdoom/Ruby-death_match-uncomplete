@@ -2,6 +2,7 @@ require 'mongoid'
 
 require_relative '../common/logger/logger'
 require_relative '../common/command_processor/command_processor'
+require_relative '../common/network_connection/server_adapter'
 
 module Deathmatch
   class Server
@@ -9,6 +10,7 @@ module Deathmatch
 
     include Deathmatch::Common::Logger
     include Deathmatch::Common::CommandProcessor
+    include Deathmatch::Common::NetworkConnection::ServerAdapter
 
     attr_reader :database_loaded
     attr_reader :core_loaded
@@ -28,28 +30,35 @@ module Deathmatch
       @core_loaded = action_result
       @status = :error unless action_result
 
-      action_result = init_network
+      action_result = init_network mode
       @network_initialized = action_result
       @status = :error unless action_result
 
       @accepted_commands = []
       @command_queue = []
+      @works = true
     end
 
     def run
       @mutex = Mutex.new
-      @command_processor_thread = Thread.new {
+      @acception_loop = Thread.new {
         while true
           @mutex.synchronize { accept_commands }
           sleep ACCEPT_COMMAND_TAKT
         end
       }
-      @main_loop_thread = Thread.new {
+      @execution_loop = Thread.new {
         while true
           @mutex.synchronize { execute_commands }
           sleep PROCESS_COMMAND_TAKT
         end
-      }.join
+      }
+      @status = :ok
+      @execution_loop.join
+    end
+
+    def shutdown
+      @tcp_server.shutdown
     end
 
     private
@@ -75,8 +84,9 @@ module Deathmatch
       require_relative 'data_model/user'
     end
 
-    def init_network
-      true
+    def init_network mode
+      load_network_settings mode
+      start_listen_for_connections
     end
   end
 end

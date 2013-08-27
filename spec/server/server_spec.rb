@@ -1,32 +1,22 @@
 require 'spec_helper'
-require_relative '../../server/server'
 
 module Deathmatch
   describe Server do
-    before(:all) do
+    it 'creates valid server instance for :test mode' do
       @server = Server.new :test
+      @server.database_loaded.should be_true
+      @server.core_loaded.should be_true
+      @server.network_initialized.should be_true
+      @server.shutdown
     end
 
-    context 'Creates simple test server.' do
-      it 'initializes database connection' do
-        @server.database_loaded.should be_true
-      end
-
-      it 'loads logic core successfully' do
-        @server.core_loaded.should be_true
-      end
-
-      it 'ititializes network connection' do
-        @server.network_initialized.should be_true
-      end
-    end
-
-    context 'Runs simple test server' do
+    context 'Running server' do
       before(:all) do
+        @server = Server.new :test
         Thread.new { @server.run }
       end
 
-      it 'has status :ok after run started' do
+      it 'sets server status to :ok after start' do
         @server.status.should == :ok
       end
     end
