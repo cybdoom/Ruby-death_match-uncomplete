@@ -20,8 +20,6 @@ module Deathmatch
       action_result = init_network({ mode: options[:mode] })
       @network_initialized = action_result
       @status = action_result ? :ok : :error
-
-      @pending_messages = {}
     end
 
     private

@@ -4,24 +4,14 @@ module Deathmatch::Common::NetworkConnection
     require 'yaml'
     require 'thread'
     require 'json'
-    require 'uuidtools'
-
-    def load_network_settings options
-      File.open("#{ Deathmatch::Client::ROOT }/config/network.yml", 'r') do |file|
-        @network_config = (YAML.load file)[options[:mode]]
-      end
-
-      true
-    end
 
     def ask_server question
-      uuid = UUIDTools::UUID.timestamp_create
-
-      question.merge!({ uuid: uuid.to_i })
       @server_socket.puts question
       @last_question = question
       @server_socket.gets
     end
+
+    private
 
     def connect_to_server
       begin
@@ -32,18 +22,12 @@ module Deathmatch::Common::NetworkConnection
       end
     end
 
-    private
-
-    def accept_responses server
-      responses = []
-      while line = server.gets
-        responses << line
+    def load_network_settings options
+      File.open("#{ Deathmatch::Client::ROOT }/config/network.yml", 'r') do |file|
+        @network_config = (YAML.load file)[options[:mode]]
       end
 
-      responses.each do |response|
-        parsed_hash = JSON.load response
-        pending_messages[parsed_hash[:uuid]][:response] = parsed_hash[:body]
-      end
+      true
     end
   end
 end
