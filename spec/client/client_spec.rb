@@ -21,8 +21,8 @@ module Deathmatch
         Thread.new { @server.run }
       end
 
-      it 'sends test message to server and waits for response' do
-        TEST_TIMEOUT = 2
+      it 'asks server the test question' do
+        TEST_TIMEOUT = 0.01
         test_question = { type: :notice,
                           needs_response: true,
                           timeout: TEST_TIMEOUT,

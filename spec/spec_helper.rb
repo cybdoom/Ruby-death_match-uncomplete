@@ -1,5 +1,6 @@
 require_relative '../server/server'
 require_relative '../client/client'
+require_relative '../client/console/console'
 
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
