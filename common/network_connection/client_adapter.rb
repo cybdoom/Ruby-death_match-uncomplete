@@ -3,21 +3,47 @@ module Deathmatch::Common::NetworkConnection
     require 'socket'
     require 'yaml'
     require 'thread'
+    require 'json'
+    require 'uuidtools'
 
-    def load_network_settings mode
+    def load_network_settings options
       File.open("#{ Deathmatch::Client::ROOT }/config/network.yml", 'r') do |file|
-        @network_config = (YAML.load file)[mode]
+        @network_config = (YAML.load file)[options[:mode]]
       end
 
       true
     end
 
-    def test_connection
-      @socket = TCPSocket.open(@network_config[:host], @network_config[:port])
-      while line = @socket.gets
-        puts line
+    def ask_server question
+      uuid = UUIDTools::UUID.timestamp_create
+
+      question.merge!({ uuid: uuid.to_i })
+      @server_socket.puts question
+      @last_question = question
+      @server_socket.gets
+    end
+
+    def connect_to_server
+      begin
+        @server_socket = TCPSocket.open(@network_config[:host], @network_config[:port])
+        true
+      rescue
+        false
       end
-      @socket.close
+    end
+
+    private
+
+    def accept_responses server
+      responses = []
+      while line = server.gets
+        responses << line
+      end
+
+      responses.each do |response|
+        parsed_hash = JSON.load response
+        pending_messages[parsed_hash[:uuid]][:response] = parsed_hash[:body]
+      end
     end
   end
 end

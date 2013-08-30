@@ -23,8 +23,8 @@ module Deathmatch
     PROCESS_COMMAND_TAKT = 0.01
     ACCEPT_COMMAND_TAKT = 0.1
 
-    def initialize mode
-      action_result = init_database mode
+    def initialize options
+      action_result = init_database({ mode: options[:mode] })
       @database_loaded = action_result
       @status = action_result ? :ok : :error
 
@@ -32,12 +32,12 @@ module Deathmatch
       @core_loaded = action_result
       @status = :error unless action_result
 
-      action_result = init_network mode
+      action_result = init_network({ mode: options[:mode] })
       @network_initialized = action_result
       @status = :error unless action_result
 
-      @accepted_commands = []
-      @command_queue = []
+      @accepted_messages = []
+      @messages = []
       @works = true
     end
 
@@ -45,17 +45,18 @@ module Deathmatch
       @mutex = Mutex.new
       @acception_loop = Thread.new {
         while true
-          @mutex.synchronize { accept_commands }
+          @mutex.synchronize { accept_messages }
           sleep ACCEPT_COMMAND_TAKT
         end
       }
-      @execution_loop = Thread.new {
+      @processing_loop = Thread.new {
         while true
-          @mutex.synchronize { execute_commands }
+          @mutex.synchronize { parse_and_process_messages }
           sleep PROCESS_COMMAND_TAKT
         end
       }
-      @execution_loop.join
+      @status = :ok
+      @processing_loop.join
     end
 
     def shutdown
@@ -64,29 +65,45 @@ module Deathmatch
 
     private
 
-    def execute_commands
-      @command_queue << Command.new({ name: :do_nothing })
-      while @command_queue.any?
-        execute_next
+    def parse_and_process_messages
+      while @messages.any?
+        process_next parsed_message
       end
     end
 
-    def accept_commands
-      @command_queue = @accepted_commands
-      @accepted_commands.clear
+    def parsed_message
+      @messages.pop
+    end
+
+    def process_next message
+      case message[:type]
+        when :command
+          new_command = Command.new(message[:body])
+          execute new_command
+          answer_with_json message[:from], { body: "Executed command: #{new_command}",
+                                             uuid: message[:uuid] } if message[:needs_answer]
+        else
+          answer_with_json message[:from], { body: "Received message: #{message[:body]}\nTime: #{Time.now}",
+                                             uuid: message[:uuid] } if message[:needs_answer]
+      end
+    end
+
+    def accept_messages
+      @messages = @accepted_messages
+      @accepted_messages.clear
     end
 
     def load_core
       true
     end
 
-    def init_database mode
-      Mongoid.load! "#{ ROOT }/config/mongoid.yml", mode
+    def init_database options
+      Mongoid.load! "#{ ROOT }/config/mongoid.yml", options[:mode]
     end
 
-    def init_network mode
-      load_network_settings mode
-      start_listen_for_connections
+    def init_network options
+      load_network_settings({ mode: options[:mode] })
+      start_listen_network
     end
   end
 end

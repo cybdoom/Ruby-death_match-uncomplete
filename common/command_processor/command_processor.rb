@@ -7,12 +7,6 @@ module Deathmatch::Common::CommandProcessor
     :shutdown
   ]
 
-  def execute_next
-    execute(@command_queue.pop)
-  end
-
-  private
-
   def execute command
     unless KNOWN_COMMANDS.include? command.name
       return false
@@ -21,6 +15,8 @@ module Deathmatch::Common::CommandProcessor
 
     self.send command.name
   end
+
+  private
 
   def do_nothing
   end
