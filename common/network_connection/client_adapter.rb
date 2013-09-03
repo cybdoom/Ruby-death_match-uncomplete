@@ -2,13 +2,12 @@ module Deathmatch::Common::NetworkConnection
   module ClientAdapter
     require 'socket'
     require 'yaml'
-    require 'thread'
     require 'json'
 
-    def ask_server question
-      @server_socket.puts question
-      @last_question = question
-      @server_socket.gets
+    def send_to_server message
+      @server_socket.puts(JSON.dump message)
+      @last_message = message
+      message[:type] == :question ? @server_socket.gets : nil
     end
 
     private

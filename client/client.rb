@@ -11,7 +11,7 @@ module Deathmatch
     attr_reader :network_initialized
     attr_reader :current_command
     attr_reader :status
-    attr_reader :last_question
+    attr_reader :last_message
 
     ROOT = File.join(Dir.pwd, 'client')
     ACCEPT_COMMAND_TAKT = 0.1

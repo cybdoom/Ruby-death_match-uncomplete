@@ -5,6 +5,7 @@ module Deathmatch::Common::NetworkConnection
     require 'thread'
 
     ACCEPT_CONNECTION_TAKT = 0.01
+    SERVE_CLIENT_TAKT = 0.01
 
     def load_network_settings options
       File.open("#{ Deathmatch::Server::ROOT }/config/network.yml", 'r') do |file|
@@ -28,27 +29,6 @@ module Deathmatch::Common::NetworkConnection
       }
 
       true
-    end
-
-    def answer_with_json client, question
-      begin
-        @remote_socket = TCPSocket.open(client[:host], client[:answer_port])
-        @remote_socket.puts JSON.dump(question)
-        @remote_socket.close
-        @last_sent = json_message
-        @pending_messages[uuid] = @last_sent if json_message[:needs_response]
-        return true
-      rescue
-        return false
-      end
-    end
-
-    private
-
-    def serve client
-      while true
-        client.puts(client.gets)
-      end
     end
   end
 end
