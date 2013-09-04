@@ -7,6 +7,8 @@ module Deathmatch::Common::NetworkConnection
     ACCEPT_CONNECTION_TAKT = 0.01
     SERVE_CLIENT_TAKT = 0.01
 
+    private
+
     def load_network_settings options
       File.open("#{ Deathmatch::Server::ROOT }/config/network.yml", 'r') do |file|
         @network_config = (YAML.load file)[options[:mode]]

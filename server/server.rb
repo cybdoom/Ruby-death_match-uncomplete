@@ -3,6 +3,7 @@ require 'json'
 
 require_relative '../common/logger/logger'
 require_relative '../common/network_connection/server_adapter'
+require_relative '../common/command_processor/command_processor'
 require_relative 'data_model/user'
 
 
@@ -11,6 +12,7 @@ module Deathmatch
     require 'thread'
 
     include Deathmatch::Common::Logger
+    include Deathmatch::Common::CommandProcessor
     include Deathmatch::Common::NetworkConnection::ServerAdapter
 
     attr_reader :database_loaded
@@ -54,8 +56,6 @@ module Deathmatch
       load_network_settings({ mode: options[:mode] })
       start_listen_network
     end
-
-    private
 
     def serve client
       @client = client
