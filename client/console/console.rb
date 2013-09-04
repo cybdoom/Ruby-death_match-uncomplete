@@ -10,5 +10,16 @@ module Deathmatch
       puts PROMPT
       gets
     end
+
+    def parse message
+      command = '', args = [], current_str
+
+      # Separate command
+      (0..message.length).each do |i|
+        break if message[i] == ' '
+        command += message[i]
+        message = message.shift
+      end
+    end
   end
 end
