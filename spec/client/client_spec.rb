@@ -19,13 +19,16 @@ module Deathmatch
     context 'Interaction with server' do
       it 'asks server the test question' do
         TEST_TIMEOUT = 0.1
-        test_question = { type: :question,
-                          timeout: TEST_TIMEOUT,
-                          body: 'Test message' }
+        test_question = Common::Command.new({
+          name: :test_connection,
+          args: [],
+          target: :remote,
+          needs_response: true
+        })
         question_time = Time.now
         answer = @client.send_to_server test_question
         (Time.now - question_time).should be <= TEST_TIMEOUT
-        @client.last_message.should == test_question
+        @client.last_command.should == test_question
         answer.should_not be_nil
       end
     end

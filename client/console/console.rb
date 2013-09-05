@@ -7,19 +7,12 @@ module Deathmatch
     private
 
     def accept_command
-      puts PROMPT
-      gets
+      printf PROMPT
+      @command_processor.parse STDIN.gets
     end
 
-    def parse message
-      command = '', args = [], current_str
-
-      # Separate command
-      (0..message.length).each do |i|
-        break if message[i] == ' '
-        command += message[i]
-        message = message.shift
-      end
+    def show_last_result
+      puts "Executed command: #{@last_command.name}\nResults: #{@last_result}"
     end
   end
 end

@@ -1,0 +1,22 @@
+namespace :server do
+  desc 'Runs server in the given mode'
+  task :run, [:mode] do |t, args|
+    require_relative 'server/server'
+
+    @server = Deathmatch::Server.new({ mode: args.mode.to_sym })
+
+    while @server.alive
+    end
+  end
+end
+
+namespace :console do
+  desc 'Runs client in the given mode'
+  task :run, [:mode] do |t, args|
+    require_relative 'client/console/console'
+
+    @console = Deathmatch::Console.new({ mode: args.mode.to_sym })
+
+    @console.run
+  end
+end

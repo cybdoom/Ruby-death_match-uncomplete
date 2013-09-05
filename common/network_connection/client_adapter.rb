@@ -4,13 +4,12 @@ module Deathmatch::Common::NetworkConnection
     require 'yaml'
     require 'json'
 
-    private
-
-    def send_to_server message
-      @server_socket.puts(JSON.dump message)
-      @last_message = message
-      message[:type] == :question ? @server_socket.gets : nil
+    def send_to_server command
+      @server_socket.puts(JSON.dump command.to_hash)
+      command.needs_response ? @server_socket.gets : nil
     end
+
+    private
 
     def connect_to_server
       begin

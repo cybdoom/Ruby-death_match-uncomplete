@@ -19,7 +19,7 @@ module Deathmatch::Common::NetworkConnection
       @tcp_server = TCPServer.new @network_config[:question_port]
       @connected_clients = []
       @listening_loop = Thread.new {
-        while true
+        while @alive
           Thread.start(@tcp_server.accept) do |client|
             @connected_clients << client
             serve client

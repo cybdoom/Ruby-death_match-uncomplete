@@ -11,9 +11,6 @@ module Deathmatch
       @console.network_initialized.should be_true
     end
 
-    it 'emulates console input' do
-    end
-
     after(:each) do
       @server.shutdown
     end
